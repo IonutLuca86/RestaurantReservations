@@ -48,15 +48,13 @@
             <Button Name="saveToFile"  Content="Save All To File" Margin="2" ToolTip="Save all reservations in Reservations Database" Foreground="Red" Background="LimeGreen"  FontSize="12" FontWeight="SemiBold" Width="180" Click="saveToFile_Click" />
 
         </DockPanel>
-        <DataGrid Name="printReservations" Grid.Column="2" Grid.Row="3" ItemsSource="{Binding reservationsList}" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Margin="0,0,14,0">
+        <DataGrid Name="printReservations" Grid.Column="2" Grid.Row="3" AutoGenerateColumns="False" HorizontalScrollBarVisibility="Disabled" Margin="0,0,14,0">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="    Date    " Binding="{Binding Date}"></DataGridTextColumn>
-                <DataGridTextColumn Header=" Time " Binding="{Binding Time}"></DataGridTextColumn>
-                <DataGridTextColumn Header="   Name   " Binding="{Binding Name}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Table Number" Binding="{Binding TableNumber}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Number of Persons" Binding="{Binding nrOfSeats}"></DataGridTextColumn>
-                <DataGridCheckBoxColumn Header="Cancel"></DataGridCheckBoxColumn>
-                <DataGridCheckBoxColumn Header="Modify"></DataGridCheckBoxColumn>
+                <DataGridTextColumn Header="Date" Width="80" Binding="{Binding Date}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Time" Width="52" Binding="{Binding Time}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Width="110" Binding="{Binding Name}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Table Number" Width="105" Binding="{Binding TableNumber}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Number of Persons" Binding="{Binding nrOfSeats}"></DataGridTextColumn>                
             </DataGrid.Columns>
         </DataGrid>
 

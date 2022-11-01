@@ -38,6 +38,7 @@ namespace RestaurantReservations
         new Reservation("Cristina","2022-12-25","17:00","Table2",1),
         new Reservation("Anna","2022-10-27","18:00","Table5",5)
         };
+        public List<Reservation> inputList = new List<Reservation>();
 
         MessageBoxResult result;
         public BookingPage()
@@ -56,11 +57,13 @@ namespace RestaurantReservations
 
         private void showReservations_Click(object sender, RoutedEventArgs e)
         {
-             DisplayContent();
+            UpdateReservationsList();
+            DisplayContent(reservationsList);
         }
 
         private void cancelReservation_Click(object sender, RoutedEventArgs e)
         {
+            DeleteReservation();
 
         }
 
@@ -68,14 +71,9 @@ namespace RestaurantReservations
         {
 
         }
-        private void DisplayContent()
-        {
-            reservationsList = reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time).ToList();
-            foreach (Reservation reservation in reservationsList)
-                if (DateTime.Parse(reservation.Date) < DateTime.Today)
-                    result = MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
-            reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
-            printReservations.ItemsSource = reservationsList;
+        private void DisplayContent(List<Reservation> lista)
+        {              
+            printReservations.ItemsSource = lista;
         }
 
         private void SaveReservations()
@@ -93,7 +91,8 @@ namespace RestaurantReservations
                 else
                 {
                     reservationsList.Add(newItem);
-                    printReservations.Items.Add(newItem);
+                    inputList.Add(newItem);
+                    DisplayContent(inputList);
                     result = MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
@@ -102,8 +101,17 @@ namespace RestaurantReservations
                 result = MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
             ClearFields();
         }
-        
 
+        private void UpdateReservationsList()
+        {
+            reservationsList = reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time).ToList();
+            foreach (Reservation reservation in reservationsList)
+                if (DateTime.Parse(reservation.Date) < DateTime.Today)
+                    result = MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
+            reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
+
+
+        }
         private void ClearFields()
         {
             nameBox.Clear();
@@ -136,6 +144,24 @@ namespace RestaurantReservations
                 result = false;
             return result;
 
+        }
+        private void DeleteReservation()
+        {
+            if (printReservations.SelectedItem == null)
+                result = MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+            {
+                Reservation? reservation = printReservations.SelectedItem as Reservation;
+                if (reservation != null)
+                {
+                    reservationsList.Remove(reservation);
+                    printReservations.ItemsSource= null;
+                    DisplayContent(reservationsList);
+                    printReservations.Items.Refresh();
+                    result = MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+            }
         }
         
     }
