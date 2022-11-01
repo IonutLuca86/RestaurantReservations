@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,19 +30,20 @@ namespace RestaurantReservations
         public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };
         public string? getName, getTableNr, getDate, getTime; 
         public int getSeatsNr;
+        
 
         public List<Reservation> reservationsList = new List<Reservation>()
         {
-        new Reservation("Ionut","2022-11-25","18:00","Table3",4),
-        new Reservation("Ionut2","2022-11-25","12:00","Table3",4),
-        new Reservation("Catalin","2022-11-28","20:00","Table5",2),
-        new Reservation("Luca","2022-12-03","19:00", "Table1",5),
-        new Reservation("Cristina","2022-12-25","17:00","Table2",1),
-        new Reservation("Anna","2022-10-27","18:00","Table5",5)
+        new Reservation("Ionut","2022-11-25","18:00","Table 3",4),
+        new Reservation("Ionut2","2022-11-25","12:00","Table 3",4),
+        new Reservation("Catalin","2022-11-28","20:00","Table 5",2),
+        new Reservation("Luca","2022-12-03","19:00", "Table 1",5),
+        new Reservation("Cristina","2022-12-25","17:00","Table 2",1),
+        new Reservation("Anna","2022-10-27","18:00","Table 5",5)
         };
-        public List<Reservation> inputList = new List<Reservation>();
 
-        MessageBoxResult result;
+        public List<Reservation> inputList = new List<Reservation>();
+      
         public BookingPage()
         {
             InitializeComponent();
@@ -67,8 +70,9 @@ namespace RestaurantReservations
 
         }
 
-        private void saveToFile_Click(object sender, RoutedEventArgs e)
+        private async void saveToFile_Click(object sender, RoutedEventArgs e)
         {
+            await WriteToFile(reservationsList);
 
         }
 
@@ -81,7 +85,7 @@ namespace RestaurantReservations
             printReservations.ItemsSource = lista;
         }
 
-        private void SaveReservations()
+        private bool SaveReservations()
         {
             if (IsValid())
             {
@@ -92,22 +96,22 @@ namespace RestaurantReservations
                 getSeatsNr =int.Parse(nrPersonsBox.Text);                
                 Reservation newItem = new Reservation(getName, getDate, getTime, getTableNr,getSeatsNr);
                 if (CheckReservation(newItem))
-                    result = MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 else
                 {
                     reservationsList.Add(newItem);
-                    //inputList.Add(newItem);
-                    //DisplayContent(inputList);
+                    inputList.Add(newItem);
                     printReservations.ItemsSource = null;
-                    DisplayContent(reservationsList);
+                    DisplayContent(inputList);
                     printReservations.Items.Refresh();
-                    result = MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
             }
             else
-                result = MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
             ClearFields();
+            return true;
         }
 
         private void UpdateReservationsList()
@@ -115,7 +119,7 @@ namespace RestaurantReservations
             reservationsList = reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time).ToList();
             foreach (Reservation reservation in reservationsList)
                 if (DateTime.Parse(reservation.Date) < DateTime.Today)
-                    result = MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
             reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
 
 
@@ -130,7 +134,14 @@ namespace RestaurantReservations
 
         }
 
-        
+        private async Task WriteToFile(List<Reservation> lista)
+        {
+            string fileName = "ReservationsDatabase.json";
+            using FileStream createStream = File.Create(fileName);
+            await JsonSerializer.SerializeAsync(createStream, reservationsList);
+            await createStream.DisposeAsync();
+            MessageBox.Show($"Saved to {fileName}","Saave Reservations",MessageBoxButton.OK,MessageBoxImage.Information);
+        }
 
         private bool IsValid()
         {
@@ -147,14 +158,14 @@ namespace RestaurantReservations
 
         private void modifyBtn_Click(object sender, RoutedEventArgs e)
         {
-            Reservation reservation = ModifyReservation();
+            
             SaveReservations();
-            reservationsList.Remove(reservation);
             printReservations.ItemsSource = null;
             DisplayContent(reservationsList);
             printReservations.Items.Refresh();
-           // result = MessageBox.Show("Your selected reservation has been modified!", "Modify Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+            
             modifyBtn.Visibility = Visibility.Hidden;
+            
         }
 
         private bool CheckReservation(Reservation reservation)
@@ -172,7 +183,7 @@ namespace RestaurantReservations
         private void DeleteReservation()
         {
             if (printReservations.SelectedItem == null)
-                result = MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
             else
             {
                 Reservation? reservation = printReservations.SelectedItem as Reservation;
@@ -182,32 +193,38 @@ namespace RestaurantReservations
                     printReservations.ItemsSource= null;
                     DisplayContent(reservationsList);
                     printReservations.Items.Refresh();
-                    result = MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
             }
         }
 
-        private Reservation ModifyReservation()
+        private void ModifyReservation()
         {
-            Reservation? reservation1 = null;
+           
             if (printReservations.SelectedItem == null)
-                result = MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
             else
             {
                 Reservation? reservation = printReservations.SelectedItem as Reservation;
                 if (reservation != null)
                 {
-                    nameBox.Text = reservation.Name;
-                    datePick.Text = reservation.Date;
-                    timeBox.Text = reservation.Time;
-                    tablesBox.Text = reservation.TableNumber;
-                    nrPersonsBox.Text = reservation.nrOfSeats.ToString();
-                    modifyBtn.Visibility = Visibility.Visible;
-                    reservation1 = reservation; 
+                    string msg = "Are you sure you want to modify the selected reservation?\n(Selected reservation will be removed!)";
+                    MessageBoxResult result = MessageBox.Show(msg, "Modify Reservation", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        nameBox.Text = reservation.Name;
+                        datePick.Text = reservation.Date;
+                        timeBox.Text = reservation.Time;
+                        tablesBox.Text = reservation.TableNumber;
+                        nrPersonsBox.Text = reservation.nrOfSeats.ToString();
+                        modifyBtn.Visibility = Visibility.Visible;
+                        reservationsList.Remove(reservation);
+                    }
                 }
             }
-            return reservation1;
+            
+           
         }
 
         
