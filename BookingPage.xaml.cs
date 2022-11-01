@@ -71,6 +71,11 @@ namespace RestaurantReservations
         {
 
         }
+
+        private void modifyReservation_Click(object sender, RoutedEventArgs e)
+        {
+            ModifyReservation();
+        }
         private void DisplayContent(List<Reservation> lista)
         {              
             printReservations.ItemsSource = lista;
@@ -91,8 +96,11 @@ namespace RestaurantReservations
                 else
                 {
                     reservationsList.Add(newItem);
-                    inputList.Add(newItem);
-                    DisplayContent(inputList);
+                    //inputList.Add(newItem);
+                    //DisplayContent(inputList);
+                    printReservations.ItemsSource = null;
+                    DisplayContent(reservationsList);
+                    printReservations.Items.Refresh();
                     result = MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
@@ -121,6 +129,9 @@ namespace RestaurantReservations
             nrPersonsBox.Text = "";
 
         }
+
+        
+
         private bool IsValid()
         {
             bool result;
@@ -133,6 +144,19 @@ namespace RestaurantReservations
             return result;
 
         }
+
+        private void modifyBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Reservation reservation = ModifyReservation();
+            SaveReservations();
+            reservationsList.Remove(reservation);
+            printReservations.ItemsSource = null;
+            DisplayContent(reservationsList);
+            printReservations.Items.Refresh();
+           // result = MessageBox.Show("Your selected reservation has been modified!", "Modify Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+            modifyBtn.Visibility = Visibility.Hidden;
+        }
+
         private bool CheckReservation(Reservation reservation)
         {
             bool result = true;
@@ -163,6 +187,29 @@ namespace RestaurantReservations
 
             }
         }
+
+        private Reservation ModifyReservation()
+        {
+            Reservation? reservation1 = null;
+            if (printReservations.SelectedItem == null)
+                result = MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+            {
+                Reservation? reservation = printReservations.SelectedItem as Reservation;
+                if (reservation != null)
+                {
+                    nameBox.Text = reservation.Name;
+                    datePick.Text = reservation.Date;
+                    timeBox.Text = reservation.Time;
+                    tablesBox.Text = reservation.TableNumber;
+                    nrPersonsBox.Text = reservation.nrOfSeats.ToString();
+                    modifyBtn.Visibility = Visibility.Visible;
+                    reservation1 = reservation; 
+                }
+            }
+            return reservation1;
+        }
+
         
     }
 }
