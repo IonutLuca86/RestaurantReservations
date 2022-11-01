@@ -32,6 +32,7 @@ namespace RestaurantReservations
         public List<Reservation> reservationsList = new List<Reservation>()
         {
         new Reservation("Ionut","2022-11-25","18:00","Table3",4),
+        new Reservation("Ionut2","2022-11-25","12:00","Table3",4),
         new Reservation("Catalin","2022-11-28","20:00","Table5",2),
         new Reservation("Luca","2022-12-03","19:00", "Table1",5),
         new Reservation("Cristina","2022-12-25","17:00","Table2",1),
@@ -55,8 +56,7 @@ namespace RestaurantReservations
 
         private void showReservations_Click(object sender, RoutedEventArgs e)
         {
-            UpdateReservationsList(reservationsList);
-            DisplayContent();
+             DisplayContent();
         }
 
         private void cancelReservation_Click(object sender, RoutedEventArgs e)
@@ -70,7 +70,11 @@ namespace RestaurantReservations
         }
         private void DisplayContent()
         {
-            //reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time);
+            reservationsList = reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time).ToList();
+            foreach (Reservation reservation in reservationsList)
+                if (DateTime.Parse(reservation.Date) < DateTime.Today)
+                    result = MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
+            reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
             printReservations.ItemsSource = reservationsList;
         }
 
@@ -98,18 +102,7 @@ namespace RestaurantReservations
                 result = MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
             ClearFields();
         }
-        private void UpdateReservationsList(List<Reservation> lista)
-        {
-            foreach (Reservation reservation in lista)
-                if ((DateTime.Parse(reservation.Date)) < DateTime.Today)
-                {
-                    result = MessageBox.Show($"{reservation} has been removed from the database because of past due time!", "Delete reservtions", MessageBoxButton.OK, MessageBoxImage.Information);
-                    lista.Remove(reservation);
-                }
-                    
-
-
-        }
+        
 
         private void ClearFields()
         {

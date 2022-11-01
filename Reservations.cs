@@ -37,11 +37,11 @@ namespace RestaurantReservations
             TableNumber = tableNumber;
             nrOfSeats = seatsNumber;
         }
-        //public override string ToString()
-        //{            
-        //    return Name + " reserved " + Table.ToString() + " on " + Date + " at " + Time;
-        //}
-        
+        public override string ToString()
+        {
+            return  Name + "'s reservation on " + Date + " at " + Time;
+        }
+
 
 
     }
