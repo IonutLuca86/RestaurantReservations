@@ -58,8 +58,9 @@ namespace RestaurantReservations
             SaveReservations(); 
         }
 
-        private void showReservations_Click(object sender, RoutedEventArgs e)
+        private async void showReservations_Click(object sender, RoutedEventArgs e)
         {
+            await ReadFromFile();  
             UpdateReservationsList();
             DisplayContent(reservationsList);
         }
@@ -121,6 +122,7 @@ namespace RestaurantReservations
                 if (DateTime.Parse(reservation.Date) < DateTime.Today)
                     MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
             reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
+            reservationsList.GroupBy(x => x).Select(y => y.First()).ToList();    
 
 
         }
@@ -134,11 +136,25 @@ namespace RestaurantReservations
 
         }
 
-        private async Task WriteToFile(List<Reservation> lista)
+        private async Task ReadFromFile()
         {
             string fileName = "ReservationsDatabase.json";
-            using FileStream createStream = File.Create(fileName);
-            await JsonSerializer.SerializeAsync(createStream, reservationsList);
+            using FileStream openStream = File.OpenRead(fileName);
+            List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
+            if (reservationJson != null)
+            {
+                foreach (Reservation reservation in reservationJson)
+                     reservationsList.Add(reservation);                      
+                            
+            }
+            
+
+        }
+        private async Task WriteToFile(List<Reservation> lista)
+        {
+            string fileName = "ReservationsDatabase.json";            
+            using FileStream createStream = File.Create(fileName);           
+            await JsonSerializer.SerializeAsync<List<Reservation>>(createStream, lista);
             await createStream.DisposeAsync();
             MessageBox.Show($"Saved to {fileName}","Saave Reservations",MessageBoxButton.OK,MessageBoxImage.Information);
         }
