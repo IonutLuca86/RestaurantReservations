@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RestaurantReservations"
-         Closing="MainWindow_Closing"
+        Closing="MainWindow_Closing"
         mc:Ignorable="d"
         Title="MainWindow" Height="650" Width="1010" ResizeMode="NoResize" WindowStartupLocation="CenterScreen">
     <Grid>
@@ -26,15 +26,15 @@
         </Grid.Background>
         <Border Grid.Row="1" Background="LightCyan"></Border>
 
-        <Button Name="reserv" Content=" Click here to make a reservation" Foreground="Red" Background="LimeGreen" FontSize="20" FontWeight="SemiBold" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Click="reserv_Click"></Button>
-        <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0,27,0,443">
-            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Stretch">
-                <TextBlock Text="Welcome to " Foreground="White" Background="Red" FontWeight="Bold" FontFamily="Magneto" FontSize="40" />
-                <TextBlock Text=" Restaurant " Foreground="Black" FontWeight="Bold" FontFamily="Magneto" FontSize="40"/>
-                <TextBlock Text=" Casa diLuca " Foreground="White" Background="LimeGreen" FontWeight="Bold" FontFamily="Magneto" FontSize="40"/>
+        <Button Name="reserv" Content=" Click here to make a reservation" Foreground="Red" Background="Lavender" FontSize="20" FontWeight="SemiBold" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" Click="reserv_Click"></Button>
+        <Label Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="0,27,0,436">
+            <StackPanel Orientation="Horizontal" Height="84">
+                <TextBlock Text="Welcome to " Foreground="White" Background="Red" FontWeight="Bold" FontFamily="Segoe Print" FontSize="40" />
+                <TextBlock Text=" Restaurant " Foreground="Black" FontWeight="Bold" FontFamily="Segoe Print" FontSize="40"/>
+                <TextBlock Text=" Casa di Luca " Foreground="White" Background="LimeGreen" FontWeight="Bold" FontFamily="Segoe Print" FontSize="40"/>
             </StackPanel>
         </Label>
-        <Label Content="The best italian restaurant in Stockholm!" HorizontalAlignment="Center" FontFamily="Magneto" FontSize="20" FontWeight="SemiBold" Foreground="Red" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,486,0,10"></Label>
+        <Label Content="The best italian restaurant in Stockholm!" HorizontalAlignment="Center" FontFamily="Segoe Script" FontSize="20" FontWeight="SemiBold" Foreground="Red" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,486,0,10"></Label>
         <Label Content="Copyright by Ionut Luca" Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right"></Label>
         <Frame Name="MainW" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Grid.ColumnSpan="2" NavigationUIVisibility="Hidden"></Frame>
     </Grid>

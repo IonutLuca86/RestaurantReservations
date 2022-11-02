@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -147,17 +148,51 @@ namespace RestaurantReservations
         private async Task ReadFromFile()
         {
             string fileName = "ReservationsDatabase.json";
-            using FileStream openStream = File.OpenRead(fileName);
-            List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
-            if (reservationJson != null)
+            if (!File.Exists(fileName))
             {
-                foreach (Reservation reservation in reservationJson)
+                MessageBox.Show("First use of the app! Please select the ReservationDatabase file!\n(HINT : File is located in project folder and you need to this only once.)", "Select File", MessageBoxButton.OK, MessageBoxImage.Information);
+                OpenFileDialog dlg = new OpenFileDialog();
+                dlg.FileName = "";
+                dlg.DefaultExt = ".json";
+                dlg.Filter = "Json file (.json)|*.json";
+                dlg.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+                Nullable<bool> result = dlg.ShowDialog();
+                if (result == true)
                 {
-                    if (!reservationsList.Contains(reservation))
-                        reservationsList.Add(reservation);
+                    string tempFileName = dlg.FileName;
+                    fileName = tempFileName;
+                    string path = dlg.InitialDirectory + "ReservationsDatabase.json";
+                    
+                    
+                    using FileStream openStream = File.OpenRead(tempFileName);
+                    List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
+                    if (reservationJson != null)
+                    {
+                        foreach (Reservation reservation in reservationJson)
+                        {
+                            if (!reservationsList.Contains(reservation))
+                                reservationsList.Add(reservation);
+
+                        }
+                    }
 
                 }
 
+
+            }
+            else 
+            {
+                using FileStream openStream = File.OpenRead(fileName);
+                List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
+                if (reservationJson != null)
+                {
+                    foreach (Reservation reservation in reservationJson)
+                    {
+                        if (!reservationsList.Contains(reservation))
+                            reservationsList.Add(reservation);
+
+                    }
+                }
             }
         }
         

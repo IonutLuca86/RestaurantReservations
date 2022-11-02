@@ -25,7 +25,7 @@
             <ColumnDefinition Width="10"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
-        <Label Content="Make a reservation :" FontSize="28" Foreground="Red" Grid.Row="1" Grid.ColumnSpan="2" HorizontalContentAlignment="Center" FontWeight="Bold" FontFamily="Magneto" Height="49" VerticalAlignment="Top" Grid.Column="1"/>
+        <Label Content="Restaurant Casa Di Luca - Reservation Manager" FontSize="28" Foreground="Red" Grid.Row="1" Grid.ColumnSpan="2" HorizontalContentAlignment="Center" FontWeight="Bold" FontFamily="Segoe Print" Height="60" VerticalAlignment="Top" Grid.Column="1"/>
         <Label Grid.Column="1" Content="Please insert your name: " FontSize="12" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="SemiBold" HorizontalAlignment="Left" Margin="10,35,0,0" Grid.Row="3" VerticalAlignment="Top" Width="144" Height="30"/>
         <TextBox Name="nameBox" MaxLength="20" Grid.Column="1" HorizontalAlignment="Left" Margin="169,35,0,0" Grid.Row="3" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="211" Height="30" />
         <Label Grid.Column="1" Content="Please select Date:" FontSize="12" FontWeight="SemiBold" HorizontalContentAlignment="Left" VerticalContentAlignment="Center"  HorizontalAlignment="Left" Margin="10,82,0,0" Grid.Row="3" VerticalAlignment="Top" Width="144" Height="30"/>
