@@ -17,6 +17,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace RestaurantReservations
 {
@@ -30,6 +31,7 @@ namespace RestaurantReservations
         public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };
         public string? getName, getTableNr, getDate, getTime; 
         public int getSeatsNr;
+        MainWindow main = new MainWindow();
 
 
         public List<Reservation> reservationsList = new List<Reservation>();

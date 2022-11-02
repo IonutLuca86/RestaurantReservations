@@ -1,7 +1,9 @@
 ﻿
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,14 +19,42 @@ using System.Windows.Shapes;
 
 namespace RestaurantReservations
 {
+    
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
+
     {
+        
+
         public MainWindow()
         {
             InitializeComponent();
+            CheckIfExists();
+           
+        }
+
+        private void CheckIfExists()
+        {
+            if (!File.Exists("ReservationsDatabase.json"))
+            {
+                MessageBox.Show("First use of the app! Please select the ReservationDatabase file!", "Select File", MessageBoxButton.OK, MessageBoxImage.Information);
+                OpenFileDialog dlg = new OpenFileDialog();
+                dlg.FileName = "";
+                dlg.DefaultExt = ".json";
+                dlg.Filter = "Json file (.json)|*.json";
+                dlg.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
+                Nullable<bool> result = dlg.ShowDialog();
+                if (result == true)
+                {
+                    string fileName = dlg.FileName;
+                    string path = dlg.InitialDirectory + "ReservationsDatabase.json";
+                    System.IO.File.Copy(fileName, path, true);
+
+                }
+                
+            }
         }
         private void reserv_Click(object sender, RoutedEventArgs e)
         {

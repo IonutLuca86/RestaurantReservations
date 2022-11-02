@@ -22,7 +22,7 @@
             <ColumnDefinition Width="10"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <Grid.Background>
-            <ImageBrush ImageSource="D:\ITHS_repositories\Labb3-TableBookning\table.jpg"></ImageBrush>
+            <ImageBrush ImageSource="table.jpg"></ImageBrush>
         </Grid.Background>
         <Border Grid.Row="1" Background="LightCyan"></Border>
 
