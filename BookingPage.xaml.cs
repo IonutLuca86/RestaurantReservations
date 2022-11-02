@@ -30,27 +30,31 @@ namespace RestaurantReservations
         public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };
         public string? getName, getTableNr, getDate, getTime; 
         public int getSeatsNr;
-        
 
-        public List<Reservation> reservationsList = new List<Reservation>()
-        {
-        new Reservation("Ionut","2022-11-25","18:00","Table 3",4),
-        new Reservation("Ionut2","2022-11-25","12:00","Table 3",4),
-        new Reservation("Catalin","2022-11-28","20:00","Table 5",2),
-        new Reservation("Luca","2022-12-03","19:00", "Table 1",5),
-        new Reservation("Cristina","2022-12-25","17:00","Table 2",1),
-        new Reservation("Anna","2022-10-27","18:00","Table 5",5)
-        };
+
+        public List<Reservation> reservationsList = new List<Reservation>();
+        //{
+        //new Reservation("Ionut","2022-11-25","18:00","Table 3",4),
+        //new Reservation("Ionut2","2022-11-25","12:00","Table 3",4),
+        //new Reservation("Catalin","2022-11-28","20:00","Table 5",2),
+        //new Reservation("Luca","2022-12-03","19:00", "Table 1",5),
+        //new Reservation("Cristina","2022-12-25","17:00","Table 2",1),
+        //new Reservation("Anna","2022-10-27","18:00","Table 5",5)
+        //};
 
         public List<Reservation> inputList = new List<Reservation>();
+        
       
-        public BookingPage()
+        public  BookingPage()
         {
             InitializeComponent();
             nrPersonsBox.ItemsSource = tableSeats;
             tablesBox.ItemsSource = tableNames;
             timeBox.ItemsSource = Rtimes;
-           
+
+            Task task = ReadFromFile();            
+            
+
         }
 
         private void saveReservation_Click(object sender, RoutedEventArgs e)
@@ -58,11 +62,12 @@ namespace RestaurantReservations
             SaveReservations(); 
         }
 
-        private async void showReservations_Click(object sender, RoutedEventArgs e)
+        private void showReservations_Click(object sender, RoutedEventArgs e)
         {
-            await ReadFromFile();  
+             
             UpdateReservationsList();
             DisplayContent(reservationsList);
+            
         }
 
         private void cancelReservation_Click(object sender, RoutedEventArgs e)
@@ -114,15 +119,16 @@ namespace RestaurantReservations
             ClearFields();
             return true;
         }
-
+        
         private void UpdateReservationsList()
         {
+            
             reservationsList = reservationsList.OrderBy(x => x.Date).ThenBy(x => x.Time).ToList();
             foreach (Reservation reservation in reservationsList)
                 if (DateTime.Parse(reservation.Date) < DateTime.Today)
-                    MessageBox.Show($"{reservation.ToString()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show($"{reservation.Print()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
             reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
-            reservationsList.GroupBy(x => x).Select(y => y.First()).ToList();    
+            reservationsList.Distinct().ToList();   
 
 
         }
@@ -144,17 +150,20 @@ namespace RestaurantReservations
             if (reservationJson != null)
             {
                 foreach (Reservation reservation in reservationJson)
-                     reservationsList.Add(reservation);                      
-                            
-            }
-            
+                {
+                    if (!reservationsList.Contains(reservation))
+                        reservationsList.Add(reservation);
 
+                }
+
+            }
         }
+        
         private async Task WriteToFile(List<Reservation> lista)
         {
             string fileName = "ReservationsDatabase.json";            
             using FileStream createStream = File.Create(fileName);           
-            await JsonSerializer.SerializeAsync<List<Reservation>>(createStream, lista);
+            await JsonSerializer.SerializeAsync(createStream, lista);
             await createStream.DisposeAsync();
             MessageBox.Show($"Saved to {fileName}","Saave Reservations",MessageBoxButton.OK,MessageBoxImage.Information);
         }
@@ -177,6 +186,7 @@ namespace RestaurantReservations
             
             SaveReservations();
             printReservations.ItemsSource = null;
+            UpdateReservationsList();
             DisplayContent(reservationsList);
             printReservations.Items.Refresh();
             
@@ -207,6 +217,7 @@ namespace RestaurantReservations
                 {
                     reservationsList.Remove(reservation);
                     printReservations.ItemsSource= null;
+                    UpdateReservationsList();
                     DisplayContent(reservationsList);
                     printReservations.Items.Refresh();
                     MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -236,6 +247,8 @@ namespace RestaurantReservations
                         nrPersonsBox.Text = reservation.nrOfSeats.ToString();
                         modifyBtn.Visibility = Visibility.Visible;
                         reservationsList.Remove(reservation);
+                        if(inputList.Contains(reservation))
+                            inputList.Remove(reservation);
                     }
                 }
             }

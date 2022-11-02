@@ -34,22 +34,24 @@ namespace RestaurantReservations
         [JsonInclude]
         public int nrOfSeats { get; set; }
 
-        
-        [JsonConstructor]
-        public Reservation(string Name,string Date, string Time, string TableNumber, int nrOfSeats)
+        [JsonConstructor]        
+        public Reservation(string name,string date, string time, string tableNumber, int NrOfSeats)
         {
-            this.Name = Name;
-            this.Date = Date;
-            this.Time = Time;           
-            this.TableNumber = TableNumber;
-            this.nrOfSeats = nrOfSeats;
+            Name = name;
+            Date = date;
+            Time = time;           
+            TableNumber = tableNumber;
+            nrOfSeats = NrOfSeats;
         }
-        public override string ToString()
+        public  string Print()
         {
             return  Name + "'s reservation on " + Date + " at " + Time;
         }
 
-
+        public override string ToString()
+        {
+            return Name + " " + Date + " " + Time + " " +  TableNumber + " " + nrOfSeats;
+        }
 
     }
 }
