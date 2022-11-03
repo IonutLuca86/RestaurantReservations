@@ -27,7 +27,7 @@ namespace RestaurantReservations
 
     {
         
-
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -35,23 +35,11 @@ namespace RestaurantReservations
            
         }
 
-        
+        // initialize a new page by clicking a button
         private void reserv_Click(object sender, RoutedEventArgs e)
         {
             MainW.NavigationService.Navigate(new BookingPage());
         }
-        private void MainWindow_Closing(object sender, CancelEventArgs e)
-        {
-            string msg = "Don't forget to save all reservations to ReservationsDatabase!\nAll Progress will be LOST!\n\nClose anyway?";
-            MessageBoxResult result = MessageBox.Show(msg, "Restaurant Table Reservation", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.No)
-            {
-                e.Cancel = true;
-            }
-
-
-
-
-        }
+        
     }
 }

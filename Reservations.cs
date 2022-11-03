@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace RestaurantReservations
 {
+    //created an interface and a class where are defined all the booking/reservation properties
     public interface IBooking
     {
         public string Date { get; set; }

@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -27,25 +28,15 @@ namespace RestaurantReservations
     /// </summary>
     public partial class BookingPage : Page
     {
-        public readonly string[] tableSeats = { "1", "2", "3", "4", "5" };
-        public readonly string[] tableNames = { "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9" };
-        public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };
-        public string? getName, getTableNr, getDate, getTime; 
+
+        public readonly string[] tableSeats = { "1", "2", "3", "4", "5" };  //items to be displyed into table seats number combobox
+        public readonly string[] tableNames = { "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9" }; //items to be displayed into Table number combobox
+        public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };  //items to be displyed into time combobox
+        public string? getName, getTableNr, getDate, getTime;  // variabels to read input from all comboBoxes
         public int getSeatsNr;
-        MainWindow main = new MainWindow();
-
-
-        public List<Reservation> reservationsList = new List<Reservation>();
-        //{
-        //new Reservation("Ionut","2022-11-25","18:00","Table 3",4),
-        //new Reservation("Ionut2","2022-11-25","12:00","Table 3",4),
-        //new Reservation("Catalin","2022-11-28","20:00","Table 5",2),
-        //new Reservation("Luca","2022-12-03","19:00", "Table 1",5),
-        //new Reservation("Cristina","2022-12-25","17:00","Table 2",1),
-        //new Reservation("Anna","2022-10-27","18:00","Table 5",5)
-        //};
-
-        public List<Reservation> inputList = new List<Reservation>();
+       
+        public List<Reservation> reservationsList = new List<Reservation>();  // all reserservation list, saved into ReservationsDatabase.json
+        public List<Reservation> inputList = new List<Reservation>();  // another list that saves only user input reservations, used only as long program runs 
         
       
         public  BookingPage()
@@ -59,12 +50,13 @@ namespace RestaurantReservations
             
 
         }
-
+        
+        // Save Reservation button
         private void saveReservation_Click(object sender, RoutedEventArgs e)
         {
             SaveReservations(); 
         }
-
+        //Show all Reservations button
         private void showReservations_Click(object sender, RoutedEventArgs e)
         {
              
@@ -72,39 +64,60 @@ namespace RestaurantReservations
             DisplayContent(reservationsList);
             
         }
-
+        // Cancel Reservation button
         private void cancelReservation_Click(object sender, RoutedEventArgs e)
         {
             DeleteReservation();
 
         }
-
-        private async void saveToFile_Click(object sender, RoutedEventArgs e)
-        {
-            await WriteToFile(reservationsList);
-
-        }
-
+        // Modify Reservation button
         private void modifyReservation_Click(object sender, RoutedEventArgs e)
         {
             ModifyReservation();
         }
+        //Save to File (different then ReservationsDatabase.json) button
+        private void saveToFile_Click(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog dlg = new SaveFileDialog();
+            dlg.FileName = "";
+            dlg.DefaultExt = ".txt";
+            Nullable<bool> result = dlg.ShowDialog();
+            if (result == true)
+            {
+                string fileName = dlg.FileName;
+                using (StreamWriter sw = new StreamWriter($"{fileName}"))
+                {
+                    foreach (Reservation reservation in reservationsList)
+                        sw.WriteLine(reservation.ToString());
+                }
+                MessageBox.Show($"Saved as {fileName}");
+            }
+
+        }
+
+
+
+        // method to update the dataGrid output
         private void DisplayContent(List<Reservation> lista)
         {              
             printReservations.ItemsSource = lista;
         }
-
-        private bool SaveReservations()
+        //method that saves the reservation if all conditions are met
+        private async void SaveReservations()
         {
             if (IsValid())
             {
+                // read input content
                 getName = nameBox.Text.First().ToString().ToUpper() + nameBox.Text.Substring(1);
                 getDate = datePick.Text;
                 getTime = timeBox.Text;
                 getTableNr = tablesBox.Text;
-                getSeatsNr =int.Parse(nrPersonsBox.Text);                
+                getSeatsNr =int.Parse(nrPersonsBox.Text);  
+                //create a new reservation 
                 Reservation newItem = new Reservation(getName, getDate, getTime, getTableNr,getSeatsNr);
-                if (CheckReservation(newItem))
+                // if all conditions have been met then the new reservation is saved into both input and reservations lists and then to ReservationsDatabase.json
+                // otherwise you get a message that describes what went wrong
+                if (CheckReservation(newItem) == false)
                     MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 else
                 {
@@ -113,6 +126,7 @@ namespace RestaurantReservations
                     printReservations.ItemsSource = null;
                     DisplayContent(inputList);
                     printReservations.Items.Refresh();
+                    await WriteToFile(reservationsList);
                     MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
@@ -120,9 +134,9 @@ namespace RestaurantReservations
             else
                 MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
             ClearFields();
-            return true;
+            
         }
-        
+        // method that sort the reservation list by date and time, removes automatically older reservations then current date and duplicates
         private void UpdateReservationsList()
         {
             
@@ -135,6 +149,7 @@ namespace RestaurantReservations
 
 
         }
+        //method that clears all text input och comboBoxes
         private void ClearFields()
         {
             nameBox.Clear();
@@ -144,7 +159,8 @@ namespace RestaurantReservations
             nrPersonsBox.Text = "";
 
         }
-
+        //method that reads all reservations from ReservationsDatabase.json
+        //at first use of the app user is prompted to select the file manually (that comes with in the project folder), then the file will be remembered
         private async Task ReadFromFile()
         {
             string fileName = "ReservationsDatabase.json";
@@ -195,16 +211,16 @@ namespace RestaurantReservations
                 }
             }
         }
-        
+        //method that writes into ReservationsDatabase.json the reservationsList after each new,canceled or modified reservation
         private async Task WriteToFile(List<Reservation> lista)
         {
             string fileName = "ReservationsDatabase.json";            
             using FileStream createStream = File.Create(fileName);           
             await JsonSerializer.SerializeAsync(createStream, lista);
             await createStream.DisposeAsync();
-            MessageBox.Show($"Saved to {fileName}","Saave Reservations",MessageBoxButton.OK,MessageBoxImage.Information);
+           
         }
-
+        //method that checks if all input fields are correctly completed
         private bool IsValid()
         {
             bool result;
@@ -217,7 +233,7 @@ namespace RestaurantReservations
             return result;
 
         }
-
+        //after pressing the modify button a new button will show to save the reservation after modifying it
         private void modifyBtn_Click(object sender, RoutedEventArgs e)
         {
             
@@ -230,42 +246,11 @@ namespace RestaurantReservations
             modifyBtn.Visibility = Visibility.Hidden;
             
         }
-
-        private bool CheckReservation(Reservation reservation)
-        {
-            bool result = true;
-            if (reservationsList.Any(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
-                            (x.TableNumber.Equals(reservation.TableNumber))
-                            && ((x.nrOfSeats + reservation.nrOfSeats) > 5)))
-                result = true;
-            else
-                result = false;
-            return result;
-
-        }
-        private void DeleteReservation()
-        {
-            if (printReservations.SelectedItem == null)
-                MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
-            else
-            {
-                Reservation? reservation = printReservations.SelectedItem as Reservation;
-                if (reservation != null)
-                {
-                    reservationsList.Remove(reservation);
-                    printReservations.ItemsSource= null;
-                    UpdateReservationsList();
-                    DisplayContent(reservationsList);
-                    printReservations.Items.Refresh();
-                    MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-
-            }
-        }
-
+        //method that reads the selected (from the dataGrid) reservation and then display its content into the input fields, then removed the reservation
+        //to make place for the new modified one
         private void ModifyReservation()
         {
-           
+
             if (printReservations.SelectedItem == null)
                 MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
             else
@@ -284,14 +269,70 @@ namespace RestaurantReservations
                         nrPersonsBox.Text = reservation.nrOfSeats.ToString();
                         modifyBtn.Visibility = Visibility.Visible;
                         reservationsList.Remove(reservation);
-                        if(inputList.Contains(reservation))
+                        if (inputList.Contains(reservation))
                             inputList.Remove(reservation);
                     }
                 }
             }
-            
-           
+
+
         }
+
+
+        //method that checks if there are other reservations on same Date at same time and at same table and if there is
+        // then it checks is seats number is greater then 5 (max seats number for a table) and returns a message or if
+        // the number is less or equal to 5 is ask user if to continue with saving the reservation
+        private bool CheckReservation(Reservation reservation)
+        {
+            bool result = true;
+            MessageBoxResult msgResult = new MessageBoxResult();
+            if (reservationsList.Any(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
+                            (x.TableNumber.Equals(reservation.TableNumber))
+                            && ((x.nrOfSeats + reservation.nrOfSeats) > 5)))
+                result = false;
+            else
+            {
+                var nrPersons = (from res in reservationsList
+                                        where res.Date.Equals(reservation.Date) && res.Time.Equals(reservation.Time) && res.TableNumber.Equals(reservation.TableNumber)
+                                        select res.nrOfSeats).FirstOrDefault();
+                if ((nrPersons + reservation.nrOfSeats) <= 5)
+                {
+                    msgResult = MessageBox.Show($"{reservation.TableNumber} has already {nrPersons} seats reserved. Do you still want to reserv this table?",
+                                        "Save Reservation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (msgResult == MessageBoxResult.Yes)
+                        result = true;
+                    else
+                        result = false;
+                }
+                     
+            }
+                
+            return result;
+
+        }
+        //method that removes the selected (from the dataGrid) reservation from the reservationList and file 
+        private async void DeleteReservation()
+        {
+            if (printReservations.SelectedItem == null)
+                MessageBox.Show("You need to first select a reservation from the list to delete it!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+            else
+            {
+                Reservation? reservation = printReservations.SelectedItem as Reservation;
+                if (reservation != null)
+                {
+                    reservationsList.Remove(reservation);
+                    printReservations.ItemsSource= null;
+                    UpdateReservationsList();
+                    DisplayContent(reservationsList);
+                    printReservations.Items.Refresh();
+                    await WriteToFile(reservationsList);
+                    MessageBox.Show("Your selected reservation has been canceled!", "Delete Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+            }
+        }
+
+        
 
         
     }
