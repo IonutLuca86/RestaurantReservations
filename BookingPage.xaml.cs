@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -105,35 +106,67 @@ namespace RestaurantReservations
         //method that saves the reservation if all conditions are met
         private async void SaveReservations()
         {
-            if (IsValid())
+            
+            // read input content
+            if (!string.IsNullOrEmpty(nameBox.Text) || !string.IsNullOrWhiteSpace(nameBox.Text) && Regex.IsMatch(nameBox.Text, @"^[a-zA-Z0-9]+$"))
             {
-                // read input content
                 getName = nameBox.Text.First().ToString().ToUpper() + nameBox.Text.Substring(1);
-                getDate = datePick.Text;
-                getTime = timeBox.Text;
-                getTableNr = tablesBox.Text;
-                getSeatsNr =int.Parse(nrPersonsBox.Text);  
-                //create a new reservation 
-                Reservation newItem = new Reservation(getName, getDate, getTime, getTableNr,getSeatsNr);
-                // if all conditions have been met then the new reservation is saved into both input and reservations lists and then to ReservationsDatabase.json
-                // otherwise you get a message that describes what went wrong
-                if (CheckReservation(newItem) == false)
-                    MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                else
+                if (datePick.SelectedDate != null)
                 {
-                    reservationsList.Add(newItem);
-                    inputList.Add(newItem);
-                    printReservations.ItemsSource = null;
-                    DisplayContent(inputList);
-                    printReservations.Items.Refresh();
-                    await WriteToFile(reservationsList);
-                    MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                    getDate = datePick.Text;
+                    if (timeBox.SelectedItem != null)
+                    {
+                        getTime = timeBox.Text;
+                        if (tablesBox.SelectedItem != null)
+                        {
+                            getTableNr = tablesBox.Text;
+                            if (tablesBox.SelectedItem != null)
+                            {
+                                getTableNr = tablesBox.Text;
+                                if (nrPersonsBox.SelectedItem != null)
+                                {
+                                    getSeatsNr = int.Parse(nrPersonsBox.Text);
 
+                                    //create a new reservation 
+                                    Reservation newItem = new Reservation(getName, getDate, getTime, getTableNr, getSeatsNr);
+                                    // if all conditions have been met then the new reservation is saved into both input and reservations lists and then to ReservationsDatabase.json
+                                    // otherwise you get a message that describes what went wrong
+                                    if (CheckReservation(newItem) == false)
+                                        MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                    else
+                                    {
+                                        reservationsList.Add(newItem);
+                                        inputList.Add(newItem);
+                                        printReservations.ItemsSource = null;
+                                        DisplayContent(inputList);
+                                        printReservations.Items.Refresh();
+                                        await WriteToFile(reservationsList);
+                                        MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                                    }
+                                    ClearFields();
+                                }
+                                    
+                                else
+                                    MessageBox.Show("Number persons field Empty!");
+                            }                               
+                            else
+                                MessageBox.Show("Table number field Empty!");
+                        }                            
+                        else
+                            MessageBox.Show("Table number field Empty!");
+                    }                        
+                    else
+                        MessageBox.Show("Time field Empty!");
+                }                    
+                else
+                    MessageBox.Show("Date field Empty!");
             }
             else
-                MessageBox.Show("Empty or invalid field! Try Again!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Error);
-            ClearFields();
+                MessageBox.Show("Name field Empty!");           
+            
+            
+
+            
             
         }
         // method that sort the reservation list by date and time, removes automatically older reservations then current date and duplicates
@@ -220,19 +253,9 @@ namespace RestaurantReservations
             await createStream.DisposeAsync();
            
         }
-        //method that checks if all input fields are correctly completed
-        private bool IsValid()
-        {
-            bool result;
-            if (string.IsNullOrEmpty(nameBox.Text) && string.IsNullOrEmpty(datePick.Text) && string.IsNullOrEmpty(timeBox.Text) &&
-                string.IsNullOrEmpty(tablesBox.Text) && string.IsNullOrEmpty(nrPersonsBox.Text))
-                result = false;
-            else
-                result = true;
+        
 
-            return result;
-
-        }
+        //}
         //after pressing the modify button a new button will show to save the reservation after modifying it
         private void modifyBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -292,9 +315,12 @@ namespace RestaurantReservations
                             && ((x.nrOfSeats + reservation.nrOfSeats) > 5)))
                 result = false;
             else
-            {                                   
-                counter = reservationsList.Where(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
-                            (x.TableNumber.Equals(reservation.TableNumber))).Sum(y => y.nrOfSeats);
+            {
+                var nrPersons = from res in reservationsList
+                                where res.Date.Equals(reservation.Date) && res.Time.Equals(reservation.Time) && res.TableNumber.Equals(reservation.TableNumber)
+                                select res.nrOfSeats;
+                foreach (var person in nrPersons)
+                    counter += person;
                 if ((counter + reservation.nrOfSeats) <= 5)
                 {
                     msgResult = MessageBox.Show($"{reservation.TableNumber} has already {counter} seats reserved. Do you still want to reserv this table?",
@@ -304,7 +330,8 @@ namespace RestaurantReservations
                     else
                         result = false;
                 }
-                     
+                else
+                result = true;
             }
                 
             return result;
