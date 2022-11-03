@@ -132,7 +132,11 @@ namespace RestaurantReservations
                                     // if all conditions have been met then the new reservation is saved into both input and reservations lists and then to ReservationsDatabase.json
                                     // otherwise you get a message that describes what went wrong
                                     if (CheckReservation(newItem) == false)
+                                    {
                                         MessageBox.Show("Table is already booked! Try again!", " Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                                        tablesBox.Text = "";
+                                    }
+                                        
                                     else
                                     {
                                         reservationsList.Add(newItem);
@@ -142,8 +146,9 @@ namespace RestaurantReservations
                                         printReservations.Items.Refresh();
                                         await WriteToFile(reservationsList);
                                         MessageBox.Show("Your reservation has been saved!", "Saving Reservation", MessageBoxButton.OK, MessageBoxImage.Information);
+                                        ClearFields();
                                     }
-                                    ClearFields();
+                                    
                                 }
                                     
                                 else
@@ -199,7 +204,7 @@ namespace RestaurantReservations
             string fileName = "ReservationsDatabase.json";
             if (!File.Exists(fileName))
             {
-                MessageBox.Show("First use of the app! Please select the ReservationDatabase file!\n(HINT : File is located in project folder and you need to this only once.)", "Select File", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("First use of the app! Please select the ReservationDatabase file!\n(HINT : File is located in solution folder and you need to do this only once.)", "Select File", MessageBoxButton.OK, MessageBoxImage.Information);
                 OpenFileDialog dlg = new OpenFileDialog();
                 dlg.FileName = "";
                 dlg.DefaultExt = ".json";
@@ -304,36 +309,32 @@ namespace RestaurantReservations
 
         //method that checks if there are other reservations on same Date at same time and at same table and if there is
         // then it checks is seats number is greater then 5 (max seats number for a table) and returns a message or if
-        // the number is less or equal to 5 is ask user if to continue with saving the reservation
+        // the number is less or equal to 5 it ask user if to continue with saving the reservation
         private bool CheckReservation(Reservation reservation)
         {
             bool result = true;
             int counter = 0;
             MessageBoxResult msgResult = new MessageBoxResult();
-            if (reservationsList.Any(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
-                            (x.TableNumber.Equals(reservation.TableNumber))
-                            && ((x.nrOfSeats + reservation.nrOfSeats) > 5)))
-                result = false;
+            var nrPersons = reservationsList.Where(x => string.Equals(x.Date, reservation.Date) && string.Equals(x.Time, reservation.Time)
+                                            && string.Equals(x.TableNumber, reservation.TableNumber)).Select(x => x.nrOfSeats);
+            foreach (var person in nrPersons)
+                counter += person;
+            if (counter == 0)
+                result = true;
             else
             {
-                var nrPersons = from res in reservationsList
-                                where res.Date.Equals(reservation.Date) && res.Time.Equals(reservation.Time) && res.TableNumber.Equals(reservation.TableNumber)
-                                select res.nrOfSeats;
-                foreach (var person in nrPersons)
-                    counter += person;
-                if ((counter + reservation.nrOfSeats) <= 5)
+                if ((counter + reservation.nrOfSeats) > 5)
+                    return false;
+                else if ((counter + reservation.nrOfSeats) > 0 && (counter + reservation.nrOfSeats) <= 5)
                 {
                     msgResult = MessageBox.Show($"{reservation.TableNumber} has already {counter} seats reserved. Do you still want to reserv this table?",
-                                        "Save Reservation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                                            "Save Reservation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                     if (msgResult == MessageBoxResult.Yes)
                         result = true;
                     else
                         result = false;
                 }
-                else
-                result = true;
             }
-                
             return result;
 
         }
@@ -348,6 +349,8 @@ namespace RestaurantReservations
                 if (reservation != null)
                 {
                     reservationsList.Remove(reservation);
+                    if (inputList.Contains(reservation))
+                        inputList.Remove(reservation);
                     printReservations.ItemsSource= null;
                     UpdateReservationsList();
                     DisplayContent(reservationsList);
