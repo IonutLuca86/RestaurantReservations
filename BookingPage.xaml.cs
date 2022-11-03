@@ -285,19 +285,19 @@ namespace RestaurantReservations
         private bool CheckReservation(Reservation reservation)
         {
             bool result = true;
+            int counter = 0;
             MessageBoxResult msgResult = new MessageBoxResult();
             if (reservationsList.Any(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
                             (x.TableNumber.Equals(reservation.TableNumber))
                             && ((x.nrOfSeats + reservation.nrOfSeats) > 5)))
                 result = false;
             else
-            {
-                var nrPersons = (from res in reservationsList
-                                        where res.Date.Equals(reservation.Date) && res.Time.Equals(reservation.Time) && res.TableNumber.Equals(reservation.TableNumber)
-                                        select res.nrOfSeats).FirstOrDefault();
-                if ((nrPersons + reservation.nrOfSeats) <= 5)
+            {                                   
+                counter = reservationsList.Where(x => (x.Date.Equals(reservation.Date)) && (x.Time.Equals(reservation.Time)) &&
+                            (x.TableNumber.Equals(reservation.TableNumber))).Sum(y => y.nrOfSeats);
+                if ((counter + reservation.nrOfSeats) <= 5)
                 {
-                    msgResult = MessageBox.Show($"{reservation.TableNumber} has already {nrPersons} seats reserved. Do you still want to reserv this table?",
+                    msgResult = MessageBox.Show($"{reservation.TableNumber} has already {counter} seats reserved. Do you still want to reserv this table?",
                                         "Save Reservation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
                     if (msgResult == MessageBoxResult.Yes)
                         result = true;
