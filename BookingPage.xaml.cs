@@ -97,7 +97,7 @@ namespace RestaurantReservations
                 }
             }
             catch (Exception ex)
-            { MessageBox.Show("Error saving file" + ex, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
+            { MessageBox.Show("Error saving to file!" + ex, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
 
         }
 
@@ -207,7 +207,9 @@ namespace RestaurantReservations
 
         }
         //method that reads all reservations from ReservationsDatabase.json
-        //at first use of the app user is prompted to select the file manually (that comes with in the project folder), then the file will be remembered
+        //at first use of the app the reservationsList will be populated with some given reservations, the json file will be created afterwards and all be written in it
+        //after the first add/delete/modify of a reservation
+        //after first use of the app the program will always read from file an repopulate the reservationsList 
         private async Task ReadFromFile()
         {
             string fileName = "ReservationsDatabase.json";
@@ -256,13 +258,13 @@ namespace RestaurantReservations
                 await JsonSerializer.SerializeAsync(createStream, lista);
                 await createStream.DisposeAsync();
             }
-            catch (Exception ex) { MessageBox.Show("Error writing to Json File" + ex,"Error",MessageBoxButton.OK,MessageBoxImage.Error); }
+            catch (Exception ex) { MessageBox.Show("Error writting to Json File" + ex,"Error",MessageBoxButton.OK,MessageBoxImage.Error); }
            
         }
         
 
-        //}
-        //after pressing the modify button a new button will show to save the reservation after modifying it
+   
+        //after pressing the modify button a new button will show that by pressing it will save the reservation after modifying it
         private void modifyBtn_Click(object sender, RoutedEventArgs e)
         {
             
@@ -275,7 +277,7 @@ namespace RestaurantReservations
             modifyBtn.Visibility = Visibility.Hidden;
             
         }
-        //method that reads the selected (from the dataGrid) reservation and then display its content into the input fields, then removed the reservation
+        //method that reads the selected (from the dataGrid) reservation and then display its content into the input fields, then removes the reservation
         //to make place for the new modified one
         private void ModifyReservation()
         {
@@ -308,8 +310,8 @@ namespace RestaurantReservations
         }
 
 
-        //method that checks if there are other reservations on same Date at same time and at same table and if there is
-        // then it checks is seats number is greater then 5 (max seats number for a table) and returns a message or if
+        //method that checks if there are other reservations on same Date at same time and at same table and if there are
+        // then it checks if seats number is greater then 5 (max seats number for a table) and returns a message or if
         // the number is less or equal to 5 it ask user if to continue with saving the reservation
         private bool CheckReservation(Reservation reservation)
         {
