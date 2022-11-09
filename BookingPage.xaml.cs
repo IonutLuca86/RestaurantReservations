@@ -30,14 +30,14 @@ namespace RestaurantReservations
     public partial class BookingPage : Page
     {
 
-        public readonly string[] tableSeats = { "1", "2", "3", "4", "5" };  //items to be displyed into table seats number combobox
-        public readonly string[] tableNames = { "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9" }; //items to be displayed into Table number combobox
-        public readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };  //items to be displyed into time combobox
-        public string? getName, getTableNr, getDate, getTime;  // variabels to read input from all comboBoxes
-        public int getSeatsNr;
+        private readonly string[] tableSeats = { "1", "2", "3", "4", "5" };  //items to be displyed into table seats number combobox
+        private readonly string[] tableNames = { "Table 1", "Table 2", "Table 3", "Table 4", "Table 5", "Table 6", "Table 7", "Table 8", "Table 9" }; //items to be displayed into Table number combobox
+        private readonly string[] Rtimes = { "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00" };  //items to be displyed into time combobox
+        string? getName, getTableNr, getDate, getTime;  // variabels to read input from all comboBoxes
+        int getSeatsNr;
        
         public List<Reservation> reservationsList = new List<Reservation>();  // all reserservation list, saved into ReservationsDatabase.json
-        public List<Reservation> inputList = new List<Reservation>();  // another list that saves only user input reservations, used only as long program runs 
+        List<Reservation> inputList = new List<Reservation>();  // another list that saves only user input reservations, used only as long program runs 
         
       
         public  BookingPage()
@@ -47,9 +47,9 @@ namespace RestaurantReservations
             tablesBox.ItemsSource = tableNames;
             timeBox.ItemsSource = Rtimes;
 
-            Task task = ReadFromFile();            
-            
+            Task task = ReadFromFile();
 
+            
         }
         
         // Save Reservation button
@@ -62,7 +62,7 @@ namespace RestaurantReservations
         {
              
             UpdateReservationsList();
-            DisplayContent(reservationsList);
+            DisplayContent(reservationsList);           
             
         }
         // Cancel Reservation button
@@ -79,20 +79,25 @@ namespace RestaurantReservations
         //Save to File (different then ReservationsDatabase.json) button
         private void saveToFile_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.FileName = "";
-            dlg.DefaultExt = ".txt";
-            Nullable<bool> result = dlg.ShowDialog();
-            if (result == true)
+            try
             {
-                string fileName = dlg.FileName;
-                using (StreamWriter sw = new StreamWriter($"{fileName}"))
+                SaveFileDialog dlg = new SaveFileDialog();
+                dlg.FileName = "";
+                dlg.DefaultExt = ".txt";
+                Nullable<bool> result = dlg.ShowDialog();
+                if (result == true)
                 {
-                    foreach (Reservation reservation in reservationsList)
-                        sw.WriteLine(reservation.ToString());
+                    string fileName = dlg.FileName;
+                    using (StreamWriter sw = new StreamWriter($"{fileName}"))
+                    {
+                        foreach (Reservation reservation in reservationsList)
+                            sw.WriteLine(reservation.ToString());
+                    }
+                    MessageBox.Show($"Saved as {fileName}");
                 }
-                MessageBox.Show($"Saved as {fileName}");
             }
+            catch (Exception ex)
+            { MessageBox.Show("Error saving file" + ex, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
 
         }
 
@@ -174,7 +179,7 @@ namespace RestaurantReservations
             
             
         }
-        // method that sort the reservation list by date and time, removes automatically older reservations then current date and duplicates
+        // method that sorts the reservation list by date and time, removes automatically older reservations then current date and duplicates
         private void UpdateReservationsList()
         {
             
@@ -183,11 +188,15 @@ namespace RestaurantReservations
                 if (DateTime.Parse(reservation.Date) < DateTime.Today)
                     MessageBox.Show($"{reservation.Print()} has been deleted because its passed due!", "Delete old Reservations", MessageBoxButton.OK, MessageBoxImage.Information);
             reservationsList.RemoveAll(x => DateTime.Parse(x.Date) < DateTime.Today);
-            reservationsList.Distinct().ToList();   
+            List<Reservation> reservations = new List<Reservation>();
+            reservations = reservationsList;
+            reservationsList = reservations.Distinct().ToList();
+            
+            
 
 
         }
-        //method that clears all text input och comboBoxes
+        //method that clears all text input and resets comboBoxes
         private void ClearFields()
         {
             nameBox.Clear();
@@ -204,21 +213,25 @@ namespace RestaurantReservations
             string fileName = "ReservationsDatabase.json";
             if (!File.Exists(fileName))
             {
-                MessageBox.Show("First use of the app! Please select the ReservationDatabase file!\n(HINT : File is located in solution folder and you need to do this only once.)", "Select File", MessageBoxButton.OK, MessageBoxImage.Information);
-                OpenFileDialog dlg = new OpenFileDialog();
-                dlg.FileName = "";
-                dlg.DefaultExt = ".json";
-                dlg.Filter = "Json file (.json)|*.json";
-                dlg.InitialDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-                Nullable<bool> result = dlg.ShowDialog();
-                if (result == true)
+                Reservation reservation  = new Reservation("Name1", "2022-11-25", "12:00", "Table 3", 4);               
+                Reservation reservation1 = new Reservation("Name2", "2022-11-08", "13:00", "Table 5", 1);
+                Reservation reservation2 = new Reservation("Name3", "2022-12-08", "18:00", "Table 3", 3);
+                Reservation reservation3 = new Reservation("Name4", "2022-11-18", "20:00", "Table 6", 2);
+                Reservation reservation4 = new Reservation("Name5", "2022-11-28", "17:00", "Table 1", 5);
+                Reservation reservation5 = new Reservation("Name6", "2022-11-21", "19:00", "Table 4", 2);
+                reservationsList.Add(reservation);
+                reservationsList.Add(reservation1);
+                reservationsList.Add(reservation2);
+                reservationsList.Add(reservation3);
+                reservationsList.Add(reservation4);
+                reservationsList.Add(reservation5);
+
+            }
+            else 
+            {
+                try
                 {
-                    string tempFileName = dlg.FileName;
-                    fileName = tempFileName;
-                    string path = dlg.InitialDirectory + "ReservationsDatabase.json";
-                    
-                    
-                    using FileStream openStream = File.OpenRead(tempFileName);
+                    using FileStream openStream = File.OpenRead(fileName);
                     List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
                     if (reservationJson != null)
                     {
@@ -229,33 +242,21 @@ namespace RestaurantReservations
 
                         }
                     }
-
                 }
-
-
-            }
-            else 
-            {
-                using FileStream openStream = File.OpenRead(fileName);
-                List<Reservation>? reservationJson = await JsonSerializer.DeserializeAsync<List<Reservation>>(openStream);
-                if (reservationJson != null)
-                {
-                    foreach (Reservation reservation in reservationJson)
-                    {
-                        if (!reservationsList.Contains(reservation))
-                            reservationsList.Add(reservation);
-
-                    }
-                }
+                catch (Exception ex) { MessageBox.Show("Error reading from json File" + ex, "Error", MessageBoxButton.OK, MessageBoxImage.Error); }
             }
         }
         //method that writes into ReservationsDatabase.json the reservationsList after each new,canceled or modified reservation
         private async Task WriteToFile(List<Reservation> lista)
         {
-            string fileName = "ReservationsDatabase.json";            
-            using FileStream createStream = File.Create(fileName);           
-            await JsonSerializer.SerializeAsync(createStream, lista);
-            await createStream.DisposeAsync();
+            try
+            {
+                string fileName = "ReservationsDatabase.json";
+                using FileStream createStream = File.Create(fileName);
+                await JsonSerializer.SerializeAsync(createStream, lista);
+                await createStream.DisposeAsync();
+            }
+            catch (Exception ex) { MessageBox.Show("Error writing to Json File" + ex,"Error",MessageBoxButton.OK,MessageBoxImage.Error); }
            
         }
         
@@ -315,7 +316,11 @@ namespace RestaurantReservations
             bool result = true;
             int counter = 0;
             MessageBoxResult msgResult = new MessageBoxResult();
-            var nrPersons = reservationsList.Where(x => string.Equals(x.Date, reservation.Date) && string.Equals(x.Time, reservation.Time)
+            int index = Array.IndexOf(Rtimes, reservation.Time);
+            string previousTime = Rtimes[index-1];
+            string nextTime = Rtimes[index+1];
+            var nrPersons = reservationsList.Where(x => string.Equals(x.Date, reservation.Date) && 
+                                            (string.Equals(x.Time, reservation.Time) || string.Equals(x.Time,previousTime) || string.Equals(x.Time,nextTime))
                                             && string.Equals(x.TableNumber, reservation.TableNumber)).Select(x => x.nrOfSeats);
             foreach (var person in nrPersons)
                 counter += person;
